@@ -1,14 +1,13 @@
 import CoreBluetooth
 import Foundation
-import Cocoa
-import Quartz
 
 class BluetoothProximityManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     var centralManager: CBCentralManager?
     var targetPeripheral: CBPeripheral?
     let targetDeviceName = "Kenzie’s iPhone"
     let rssiThreshold = -70
-    var passwordEntered = false
+    var stop = true
+    var lock = locking_module()
     
     override init() {
         super.init()
@@ -19,6 +18,9 @@ class BluetoothProximityManager: NSObject, CBCentralManagerDelegate, CBPeriphera
     
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         if central.state == .poweredOn {
+            if(stop){
+                return
+            }
             print("Bluetooth is powered on. Scanning for devices...")
             centralManager?.scanForPeripherals(withServices: nil, options: nil)
         } else {
@@ -43,13 +45,20 @@ class BluetoothProximityManager: NSObject, CBCentralManagerDelegate, CBPeriphera
     }
 
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+//        if !stop {
         print("Disconnected from \(peripheral.name ?? "Unknown Device"). Attempting to reconnect...")
         centralManager?.connect(peripheral, options: nil)
+//        }
+        
     }
 
     // MARK: - CBPeripheralDelegate Methods
     
     func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
+        if stop, let targetPeripheral = targetPeripheral {
+            centralManager?.cancelPeripheralConnection(targetPeripheral)
+        }
+        
         if let error = error {
             print("Error reading RSSI: \(error)")
             return
@@ -63,72 +72,23 @@ class BluetoothProximityManager: NSObject, CBCentralManagerDelegate, CBPeriphera
         }
     }
 
-    // Monitor characteristics or services if necessary
-    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
-        
-    }
-
-    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-        // Handle received data if needed
-    }
-
     // MARK: - Proximity Check and Screen Lock
     
     func checkProximityAndLockIfNecessary(_ RSSI: NSNumber) {
         if RSSI.intValue < rssiThreshold {
-            print("iPhone is out of range. Locking the screen...")
-            lockScreen()
+//            print("iPhone is out of range. Locking the screen...")
+            lock.lockScreen()
 //            passwordEntered = false
-        } else if RSSI.intValue <= -30 && RSSI.intValue >= -50 && isScreenLocked(){
+        } else if RSSI.intValue <= -30 && RSSI.intValue >= -50 && lock.isScreenLocked(){
             // cek lg apakah macbooknya udh nyala screen ato belom
-            print("iPhone is near. Unlocking screen...")
-            openScreen()
+//            print("iPhone is near. Unlocking screen...")
+            lock.openScreen()
         } else {
-            print("iPhone is within range.")
+//            print("iPhone is within range.")
         }
         
 
-    }
-
-    func lockScreen() {
-        // Call a system command to lock the screen
-        let task = Process()
-        task.launchPath = "/usr/bin/osascript"
-        task.arguments = ["-e", "tell application \"System Events\" to keystroke \"q\" using {control down, command down}"]
-        task.launch()
-    }
-    
-    func openScreen(){
-        let task = Process()
-        task.launchPath = "/usr/bin/osascript"
-        task.arguments = ["-e", """
-            tell application "System Events"
-                keystroke "<password>"
-                delay 1
-                keystroke return
-            end tell
-            """]
-        task.launch()
-        
-//        passwordEntered = true
-    }
-    
-    func isScreenLocked() -> Bool{
-        if let status = Quartz.CGSessionCopyCurrentDictionary() as? [String : Any],
-           let isLocked = status["CGSSessionScreenIsLocked"] as? Bool{
-            return isLocked
-        } else {
-            return false
-        }
     }
 }
-
-// Initialize the BluetoothProximityManager
-let bluetoothProximityManager = BluetoothProximityManager()
-
-// Keep the app running to monitor the connection
-RunLoop.main.run()
-
-
 
 
