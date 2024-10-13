@@ -61,7 +61,7 @@ class receiver: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
                 if characteristic.uuid == CBUUID(string: "59e87c5e-4b70-4631-bc6c-a0d069f421c7") {
                     lockCharacteristic = characteristic
                     peripheral.setNotifyValue(true, for: characteristic)
-                    print("Subscribed to characteristic notifications")
+                    print("Connected to iPhone")
                 }
             }
         }

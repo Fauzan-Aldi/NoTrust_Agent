@@ -25,7 +25,7 @@ class locking_module {
         task.launchPath = "/usr/bin/osascript"
         task.arguments = ["-e", """
             tell application "System Events"
-                keystroke "your_password"
+                keystroke "Coolguy45"
                 delay 1
                 keystroke return
             end tell

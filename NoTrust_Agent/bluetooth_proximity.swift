@@ -19,8 +19,10 @@ class BluetoothProximityManager: NSObject, CBCentralManagerDelegate, CBPeriphera
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         if central.state == .poweredOn {
             if(stop){
+                print("auto locknya mati bang")
                 return
             }
+            print("auto locknya nyala bang")
             print("Bluetooth is powered on. Scanning for devices...")
             centralManager?.scanForPeripherals(withServices: nil, options: nil)
         } else {
@@ -45,18 +47,21 @@ class BluetoothProximityManager: NSObject, CBCentralManagerDelegate, CBPeriphera
     }
 
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-//        if !stop {
-        print("Disconnected from \(peripheral.name ?? "Unknown Device"). Attempting to reconnect...")
-        centralManager?.connect(peripheral, options: nil)
-//        }
+        if !stop {
+            print("Disconnected from \(peripheral.name ?? "Unknown Device"). Attempting to reconnect...")
+            centralManager?.connect(peripheral, options: nil)
+        }
         
     }
 
     // MARK: - CBPeripheralDelegate Methods
     
     func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
-        if stop, let targetPeripheral = targetPeripheral {
-            centralManager?.cancelPeripheralConnection(targetPeripheral)
+        if stop{
+            if let targetPeripheral = targetPeripheral {
+                centralManager?.cancelPeripheralConnection(targetPeripheral)
+            }
+            return
         }
         
         if let error = error {
