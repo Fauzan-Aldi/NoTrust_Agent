@@ -1,9 +1,3 @@
-//
-//  receiver.swift
-//  NoTrust_Agent
-//
-//  Created by Kenzie Nabeel on 24/09/24.
-//
 
 import CoreBluetooth
 import Foundation

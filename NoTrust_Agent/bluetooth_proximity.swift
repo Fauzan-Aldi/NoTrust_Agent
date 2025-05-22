@@ -14,7 +14,6 @@ class BluetoothProximityManager: NSObject, CBCentralManagerDelegate, CBPeriphera
         centralManager = CBCentralManager(delegate: self, queue: nil)
     }
 
-    // MARK: - CBCentralManagerDelegate Methods
     
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         if central.state == .poweredOn {
@@ -42,7 +41,7 @@ class BluetoothProximityManager: NSObject, CBCentralManagerDelegate, CBPeriphera
 
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         print("Connected to \(peripheral.name ?? "Unknown Device").")
-        // Start monitoring RSSI after connection
+      
         peripheral.readRSSI()
     }
 
@@ -54,7 +53,7 @@ class BluetoothProximityManager: NSObject, CBCentralManagerDelegate, CBPeriphera
         
     }
 
-    // MARK: - CBPeripheralDelegate Methods
+
     
     func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
         if stop{
@@ -77,19 +76,17 @@ class BluetoothProximityManager: NSObject, CBCentralManagerDelegate, CBPeriphera
         }
     }
 
-    // MARK: - Proximity Check and Screen Lock
-    
+   
     func checkProximityAndLockIfNecessary(_ RSSI: NSNumber) {
         if RSSI.intValue < rssiThreshold {
-//            print("iPhone is out of range. Locking the screen...")
+
             lock.lockScreen()
-//            passwordEntered = false
+
         } else if RSSI.intValue <= -30 && RSSI.intValue >= -50 && lock.isScreenLocked(){
-            // cek lg apakah macbooknya udh nyala screen ato belom
-//            print("iPhone is near. Unlocking screen...")
+
             lock.openScreen()
         } else {
-//            print("iPhone is within range.")
+
         }
         
 
